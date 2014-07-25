@@ -1,0 +1,13 @@
+.idea
+vendor
+!config/params.dist.php
+config
+bin
+data/
+
+build
+buildfile.php
+rsync_exclude
+
+rn2014.db
+rn2014.db.gz
