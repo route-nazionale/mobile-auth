@@ -1,7 +1,7 @@
 .idea
 vendor
 !config/params.dist.php
-config
+config/params.php
 bin
 data/
 
