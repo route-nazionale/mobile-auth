@@ -93,7 +93,11 @@ $app['auth.client'] = $app->share(function() use ($app) {
 });
 $app['auth'] = $app->share(function() use ($app) {
 
-    return new Auth($app['auth.client'], $app['dbs']['varchi'], $app['aes.encoder'], $app['monolog.login'], API_AUTH);
+    $auth = new Auth($app['auth.client'], $app['dbs']['varchi'], $app['aes.encoder'], $app['monolog.login'], API_AUTH);
+
+    $auth->setAuthFake(AUTH_FAKE);
+
+    return $auth;
 });
 
 return $app;

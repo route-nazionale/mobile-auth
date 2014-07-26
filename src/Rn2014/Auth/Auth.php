@@ -20,6 +20,7 @@ class Auth
     protected $clientAuth;
     protected $aes;
     protected $apiUrl;
+    protected $table_assegnamenti = "assegnamenti";
 
     public function __construct(Client $client, Connection $dbal, AESEncoder $aes, Logger $authLogger, $authApiUrl = "")
     {
@@ -124,12 +125,19 @@ class Auth
 
     public function isCapoSpalla($cu)
     {
-        $sql = "SELECT * FROM assegnamenti WHERE cu = :username AND staffEvent = 1";
+        $sql = "SELECT * FROM {$this->table_assegnamenti} WHERE cu = :username AND staffEvent = 1";
         $result = $this->dbVarchi->fetchAssoc($sql, [
             'cu' => $cu,
         ]);
 
         return ($result || 0);
+    }
+
+    public function setAuthFake($status = false)
+    {
+        if ($status) {
+            $this->table_assegnamenti = "assegnamenti_sample";
+        }
     }
 
     public function getAuthStatusCode($cu, $cryptedBirthdate, $group)

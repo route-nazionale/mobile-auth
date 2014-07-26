@@ -5,6 +5,7 @@
         "silex/silex": "1.2.*@dev",
         "doctrine/dbal": "2.2.*",
         "monolog/monolog": "1.10.*@dev",
+        "symfony/twig-bridge": "2.6.*@dev",
         "guzzlehttp/guzzle": "4.*"
     },
     "require-dev": {

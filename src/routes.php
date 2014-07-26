@@ -40,21 +40,6 @@ $app->post("/auth", function() use ($app){
 })
     ->before($checkJsonRequest);
 
-if ($app['debug']) {
-
-    $app->get("/encode/{password}", function($password) use ($app){
-
-        return $app['aes.encoder']->encode($password);
-    });
-
-    $app->get("/decode", function() use ($app){
-
-        $password = $app['request']->query->get('password', '');
-
-        return $app['aes.encoder']->decode($password);
-    });
-}
-
 $app->error(function (\Exception $e, $code) use ($app) {
 
     // commented for testing purposes
