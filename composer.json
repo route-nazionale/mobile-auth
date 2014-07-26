@@ -6,6 +6,7 @@
         "doctrine/dbal": "2.2.*",
         "monolog/monolog": "1.10.*@dev",
         "symfony/twig-bridge": "2.6.*@dev",
+        "twig/twig": ">=1.8,<2.0-dev",
         "guzzlehttp/guzzle": "4.*"
     },
     "require-dev": {

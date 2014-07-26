@@ -11,20 +11,19 @@ use Doctrine\DBAL\Connection;
 use GuzzleHttp\Client;
 use Monolog\Logger;
 use Rn2014\AESEncoder;
-use GuzzleHttp\Exception\RequestException;
+use Rn2014\Varchi;
 use Symfony\Component\HttpFoundation\Request;
 
 class Auth
 {
-    protected $dbVarchi;
+    protected $varchi;
     protected $clientAuth;
     protected $aes;
     protected $apiUrl;
-    protected $table_assegnamenti = "assegnamenti";
 
-    public function __construct(Client $client, Connection $dbal, AESEncoder $aes, Logger $authLogger, $authApiUrl = "")
+    public function __construct(Client $client, Varchi $varchi, AESEncoder $aes, Logger $authLogger, $authApiUrl = "")
     {
-        $this->dbVarchi = $dbal;
+        $this->varchi = $varchi;
         $this->clientAuth = $client;
         $this->aes = $aes;
         $this->logger = $authLogger;
@@ -33,20 +32,20 @@ class Auth
 
     public function attemptLogin(Request $request, $group)
     {
-        $birthdate = $request->get('birthdate', null);
-        $cu  = $request->get('cu', null);
+        $birthdate = $request->request->get('date', null);
+        $cu  = $request->request->get('cu', null);
 
         $context = [
             'cu' => $cu,
             'birthdate' => $birthdate,
             'group' => $group,
             'result' => null,
-            'imei' => $request->get('imei'),
+            'imei' => $request->request->get('imei'),
             'ip' => $request->getClientIps(),
             'user_agent' => $request->headers->get('User-Agent'),
         ];
 
-        if (!$cu || $birthdate) {
+        if (!$cu || !$birthdate) {
 
             $this->logger->addInfo("KO no data", $context);
 
@@ -89,16 +88,16 @@ class Auth
                 return $result;;
             case 403:
 
-                $ok = $this->existsPerson($cu, $birthdate) && $this->isCapoSpalla($cu);
+                $ok = $this->varchi->existsPerson($cu, $birthdate) && $this->varchi->isCapoSpalla($cu);
 
                 if ($ok) {
 
                     $result = [
                         "code" => 200,
-                        "result" => "capospalla",
+                        "result" => "event",
                     ];
                     $context['result'] = $result;
-                    $this->logger->addInfo("OK capospalla", $context);
+                    $this->logger->addInfo("OK event", $context);
                     return $result;
                 }
         }
@@ -110,34 +109,6 @@ class Auth
         $context['result'] = $result;
         $this->logger->addInfo("KO no auth", $context);
         return $result;
-    }
-
-    public function existsPerson($cu, $birthdate)
-    {
-        $sql = "SELECT * FROM date WHERE cu = :cu AND datanascita = :birthdate limit 1";
-        $result = $this->dbVarchi->fetchAssoc($sql, [
-            'cu' => $cu,
-            'birthdate' => $birthdate
-        ]);
-
-        return ($result || 0);
-    }
-
-    public function isCapoSpalla($cu)
-    {
-        $sql = "SELECT * FROM {$this->table_assegnamenti} WHERE cu = :username AND staffEvent = 1";
-        $result = $this->dbVarchi->fetchAssoc($sql, [
-            'cu' => $cu,
-        ]);
-
-        return ($result || 0);
-    }
-
-    public function setAuthFake($status = false)
-    {
-        if ($status) {
-            $this->table_assegnamenti = "assegnamenti_sample";
-        }
     }
 
     public function getAuthStatusCode($cu, $cryptedBirthdate, $group)
@@ -155,9 +126,16 @@ class Auth
             ]);
 
         } catch (RequestException $e) {
-            return 500;
+
+            return [
+                'code' => 500,
+                'result' => $e->getMessage(),
+            ];
         }
 
-        return $this->response->getStatusCode();
+        return [
+            'code' => $this->response->getStatusCode(),
+            'result' => '-'
+        ];
     }
 } 

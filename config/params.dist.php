@@ -7,7 +7,8 @@
 
 define('APP_DEBUG', false);
 
-define('HTTPS_REQUIRED', true);
+define('AUTH_FAKE', true);
+define('HTTPS_REQUIRED', false);
 
 define('API_AUTH', "https://localhost/auth");
 

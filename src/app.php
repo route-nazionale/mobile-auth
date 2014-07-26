@@ -11,6 +11,8 @@ use Monolog\Handler\StreamHandler;
 
 use Rn2014\AESEncoder;
 use Rn2014\Auth\Auth;
+use Rn2014\Auth\AuthFake;
+use Rn2014\Statistic;
 
 $app->register(new Providers\TwigServiceProvider(), [
     'twig.path' => __DIR__.'/../views',
@@ -91,13 +93,35 @@ $app['auth.client'] = $app->share(function() use ($app) {
     return $client;
 
 });
+
 $app['auth'] = $app->share(function() use ($app) {
 
-    $auth = new Auth($app['auth.client'], $app['dbs']['varchi'], $app['aes.encoder'], $app['monolog.login'], API_AUTH);
+    if (!AUTH_FAKE) {
+        $auth = new Auth($app['auth.client'], $app['dbs']['varchi'], $app['aes.encoder'], $app['monolog.login'], API_AUTH);
+    } else {
 
-    $auth->setAuthFake(AUTH_FAKE);
+        $users = [
+            "OT-1541-028230" => ["1990-10-10", "security"],
+            "AG-0395-018827" => ["1996-05-08", "event"],
+        ];
+        $auth = new AuthFake($users, $app['monolog.login']);
+    }
 
     return $auth;
 });
+
+$app['statistics'] = $app->share(function() use ($app){
+    return new Statistic($app['dbs']['varchi']);
+});
+
+
+// Http cache
+$app['cache.path'] = __DIR__.'/../cache/';
+$app['http_cache.cache_dir'] = $app['cache.path'] . '/http';
+
+// Twig cache
+$app['twig.path'] = array(__DIR__.'/../templates');
+$app['twig.options'] = array('cache' => $app['cache.path'] . '/twig');
+
 
 return $app;
