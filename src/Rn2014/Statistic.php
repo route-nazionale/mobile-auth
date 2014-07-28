@@ -42,6 +42,9 @@ class Statistic
             'idVarco' => $stat->gate,
         ];
 
-        return $this->conn->insert('statistiche', $data);
+        if ($this->conn->insert('statistiche', $data)) {
+            return $data;
+        }
+        return false;
     }
 }

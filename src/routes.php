@@ -26,6 +26,7 @@ $app->before(function() use ($app){
 
 $app->post("/auth.php", function() use ($app){
 
+    $app['monolog']->addNotice("request-auth", $app['request']->request->all());
     // indice di ristampa badge
     $reprint = $app['request']->get('reprint');
 
@@ -44,6 +45,7 @@ $app->post("/auth.php", function() use ($app){
 
 $app->post("/post.php", function() use ($app){
 
+    $app['monolog']->addNotice("request-post", $app['request']->request->all());
     // indice di ristampa badge
     $reprint = $app['request']->request->get('reprint');
 
@@ -71,21 +73,26 @@ $app->post("/post.php", function() use ($app){
     } else {
 
         foreach($json->update as $stat){
-
-            $app['statistics']->insertStatistics($stat);
+            $arrayStat = $app['statistics']->insertStatistics($stat);
+            $app['monolog.stats']->addNotice($stat->type, $arrayStat);
         }
 
         return new Response(null, 200);
     }
 });
 
-$app->get("/ident.php", function() use ($app){
+$app->post("/ident.php", function() use ($app){
 
-    if (!isset($_POST['search']) || !isset($_POST['cu']) || !isset($_POST['date'])){
+    $app['monolog']->addNotice("request-ident", $app['request']->request->all());
+
+    $cu = $app['request']->request->get('cu');
+    $date = $app['request']->request->get('date');
+    $search = $app['request']->request->get('search');
+
+    if (!$search || !$cu || !$date){
 
         return new Response(null, 400);
     }
-    $search = $app['requeest']->request->get('search');
 
     $group = "security";
     /*
@@ -110,19 +117,16 @@ $app->get("/ident.php", function() use ($app){
         return new Response("No auth", 403);
     }
 
-    $all = $app['varchi']->findByCU($search);
+    $person = $app['varchi']->findByCU($search);
 
     $json = new \stdClass();
     $json->status = "notfound";
 
-    if (count($all) == 1){
-        $row = $all[0];
-
+    if ($person){
         $json->status = "found";
-        $json->nome = $row['nome'];
-        $json->cognome = $row['cognome'];
-        $json->data = $row['datanascita'];
-
+        $json->nome = $person['nome'];
+        $json->cognome = $person['cognome'];
+        $json->data = $person['datanascita'];
     }
 
     return new JsonResponse($json);

@@ -13,6 +13,7 @@ use Rn2014\AESEncoder;
 use Rn2014\Auth\Auth;
 use Rn2014\Auth\AuthFake;
 use Rn2014\Statistic;
+use Rn2014\Varchi;
 
 $app->register(new Providers\TwigServiceProvider(), [
     'twig.path' => __DIR__.'/../views',
@@ -64,40 +65,36 @@ $app['monolog.login'] = $app->share(function ($app) {
     return $log;
 });
 
+$app['monolog.stats.logfile'] = __DIR__ . '/../logs/mobile-stats.log';
+$app['monolog.stats.level'] = Logger::INFO;
+$app['monolog.stats'] = $app->share(function ($app) {
+    $log = new $app['monolog.logger.class']('stats');
+    $handler = new StreamHandler($app['monolog.stats.logfile'], $app['monolog.stats.level']);
+    $log->pushHandler($handler);
+
+    return $log;
+});
+
 $app['aes.encoder'] = $app->share(function() use ($app) {
+    $aesManager = new \Rn2014\AESManager($app['dbs']['aes']);
 
-    if (AES_IV && AES_KEY) {
-
-        $iv = AES_IV;
-        $key = AES_KEY;
-
-    } else {
-
-        $sql = "SELECT * FROM aes LIMIT 1";
-        $cryptData = $app['dbs']['aes']->fetchAssoc($sql);
-
-        if (!$cryptData) {
-            throw new \Exception("key and iv not found");
-        }
-
-        $iv = base64_decode($cryptData['iv']);
-        $key = base64_decode($cryptData['key']);
-    }
-
-    return new AESEncoder($key,$iv);
+    return $aesManager->getEncoder();
 });
 
 $app['auth.client'] = $app->share(function() use ($app) {
     $client = new GuzzleHttp\Client();
 
     return $client;
+});
 
+$app['varchi'] = $app->share(function() use ($app){
+    return new Varchi($app['dbs']['varchi']);
 });
 
 $app['auth'] = $app->share(function() use ($app) {
 
     if (!AUTH_FAKE) {
-        $auth = new Auth($app['auth.client'], $app['dbs']['varchi'], $app['aes.encoder'], $app['monolog.login'], API_AUTH);
+        $auth = new Auth($app['auth.client'], $app['varchi'], $app['aes.encoder'], $app['monolog.login'], API_AUTH);
     } else {
 
         $users = [
@@ -113,7 +110,6 @@ $app['auth'] = $app->share(function() use ($app) {
 $app['statistics'] = $app->share(function() use ($app){
     return new Statistic($app['dbs']['varchi']);
 });
-
 
 // Http cache
 $app['cache.path'] = __DIR__.'/../cache/';
