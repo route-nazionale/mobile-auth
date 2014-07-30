@@ -65,6 +65,14 @@ $app['monolog.login'] = $app->share(function ($app) {
     return $log;
 });
 
+$app['monolog.login.meal'] = $app->share(function ($app) {
+    $log = new $app['monolog.logger.class']('login.meal');
+    $handler = new StreamHandler($app['monolog.login.logfile'], $app['monolog.login.level']);
+    $log->pushHandler($handler);
+
+    return $log;
+});
+
 $app['monolog.stats.logfile'] = __DIR__ . '/../logs/mobile-stats.log';
 $app['monolog.stats.level'] = Logger::INFO;
 $app['monolog.stats'] = $app->share(function ($app) {

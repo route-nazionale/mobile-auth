@@ -7,11 +7,7 @@
 
 namespace Rn2014\Auth;
 
-use Doctrine\DBAL\Connection;
-use GuzzleHttp\Client;
 use Monolog\Logger;
-use Rn2014\AESEncoder;
-use GuzzleHttp\Exception\RequestException;
 use Symfony\Component\HttpFoundation\Request;
 
 class AuthFake implements AuthInterface
@@ -23,6 +19,11 @@ class AuthFake implements AuthInterface
     {
         $this->users = $users;
         $this->logger = $logger;
+    }
+
+    public function setLogger(Logger $authLogger)
+    {
+        $this->logger = $authLogger;
     }
 
     public function setSecondaryAuth($auth)
@@ -70,7 +71,7 @@ class AuthFake implements AuthInterface
             "result" => "not authorized",
         ];
         $context['result'] = $result;
-        $this->logger->addInfo("KO no auth", $context);
+        $this->logger->addInfo("FAKE KO no auth", $context);
         return $result;
     }
 } 

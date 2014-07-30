@@ -19,7 +19,7 @@ $meal->post("/auth.php", function() use ($app){
     $app['monolog']->addNotice("request-meal-auth", $app['request']->request->all());
     // indice di ristampa badge
     $reprint = $app['request']->get('reprint');
-
+    $app['auth']->setLogger($app['monolog.login.meal']);
     $app['auth']->setSecondaryAuth(null);
 
     $group  = LDAP_MEAL_GROUP;
@@ -35,7 +35,7 @@ $meal->post("/post.php", function() use ($app){
 
 //     indice di ristampa badge
 //    $reprint = $app['request']->request->get('reprint');
-
+    $app['auth']->setLogger($app['monolog.login.meal']);
     $app['auth']->setSecondaryAuth(null);
 
     $group  = LDAP_MEAL_GROUP;

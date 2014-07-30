@@ -32,6 +32,11 @@ class Auth implements AuthInterface
         $this->apiUrl = $authApiUrl;
     }
 
+    public function setLogger(Logger $authLogger)
+    {
+        $this->logger = $authLogger;
+    }
+
     public function setSecondaryAuth($secondaryAuth)
     {
         $this->secondaryAuth = $secondaryAuth;
