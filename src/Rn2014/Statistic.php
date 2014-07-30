@@ -6,14 +6,18 @@ use Doctrine\DBAL\Connection ;
 
 class Statistic
 {
-    public function __construct(Connection $conn)
+    protected $conn;
+    protected $table;
+
+    public function __construct(Connection $conn, $table = "statistiche")
     {
         $this->conn = $conn;
+        $this->table = $table;
     }
 
     public function findByTimeAndImei($time, $imei)
     {
-        $sql = "SELECT codiceUnivoco FROM statistiche where timeStamp = :timeStamp and imei = :imei limit 1";
+        $sql = "SELECT codiceUnivoco FROM {$this->table} where timeStamp = :timeStamp and imei = :imei limit 1";
 
         $res = $this->conn->fetchAssoc($sql, [
             'timeStamp' => $time,
@@ -42,7 +46,7 @@ class Statistic
             'idVarco' => $stat->gate,
         ];
 
-        if ($this->conn->insert('statistiche', $data)) {
+        if ($this->conn->insert($this->table, $data)) {
             return $data;
         }
         return false;

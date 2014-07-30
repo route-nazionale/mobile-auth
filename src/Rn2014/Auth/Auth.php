@@ -14,12 +14,14 @@ use Rn2014\AESEncoder;
 use Rn2014\Varchi;
 use Symfony\Component\HttpFoundation\Request;
 
-class Auth
+class Auth implements AuthInterface
 {
     protected $varchi;
     protected $clientAuth;
     protected $aes;
     protected $apiUrl;
+    protected $context;
+    protected $secondaryAuth;
 
     public function __construct(Client $client, Varchi $varchi, AESEncoder $aes, Logger $authLogger, $authApiUrl = "")
     {
@@ -30,12 +32,18 @@ class Auth
         $this->apiUrl = $authApiUrl;
     }
 
+    public function setSecondaryAuth($secondaryAuth)
+    {
+        $this->secondaryAuth = $secondaryAuth;
+    }
+
     public function attemptLogin(Request $request, $group)
     {
+        $response = new AuthResponse();
         $birthdate = $request->request->get('date', null);
         $cu  = $request->request->get('cu', null);
 
-        $context = [
+        $this->context = [
             'cu' => $cu,
             'birthdate' => $birthdate,
             'group' => $group,
@@ -47,72 +55,72 @@ class Auth
 
         if (!$cu || !$birthdate) {
 
-            $this->logger->addInfo("KO no data", $context);
+            $this->logger->addInfo("KO no data", $this->context);
 
-            return [
-                "code" => 401,
-                "result" => "missing data",
-            ];
+            return $response->setCode(401)
+                            ->setResult("missing data")
+                            ->toArray();
         }
 
         $cryptedBirthdate = $this->aes->encode($birthdate);
 
-        $statusCode = $this->getAuthStatusCode($cu, $cryptedBirthdate, $group);
+        $result = $this->getAuthStatusCode($cu, $cryptedBirthdate, $group);
 
-        switch ($statusCode) {
+        switch ($result['code']) {
             case 500:
-                $result = [
-                    "code" => 500,
-                    "result" => "retry later",
-                ];
-                $context['result'] = $result;
+                $result = $response->setCode(500)
+                                    ->setResult("retry later")
+                                    ->toArray();
 
-                $this->logger->addCritical("server response 500", $context);
+                $this->context['result'] = $result;
+
+                $this->logger->addCritical("server response 500", $this->context);
                 return $result;
             case 204:
-                $result = [
+                $result = $response->setCode(200)
+                                    ->setResult("security")
+                                    ->toArray();[
                     "code" => 200,
                     "result" => "security",
                 ];
-                $context['result'] = $result;
-                $this->logger->addInfo("OK security", $context);
+                $this->context['result'] = $result;
+                $this->logger->addInfo("OK security", $this->context);
 
                 return $result;
             case 401:
-                $result = [
-                    "code" => 401,
-                    "result" => "missing data",
-                ];
-                $context['result'] = $result;
-                $this->logger->addInfo("KO no data", $context);
-                return $result;;
+                $result = $response->setCode(401)
+                                    ->setResult("missing data")
+                                    ->toArray();
+
+                $this->context['result'] = $result;
+                $this->logger->addInfo("KO no data", $this->context);
+
+                return $result;
             case 403:
-
-                $ok = $this->varchi->existsPerson($cu, $birthdate) && $this->varchi->isCapoSpalla($cu);
-
-                if ($ok) {
-
-                    $result = [
-                        "code" => 200,
-                        "result" => "event",
-                    ];
-                    $context['result'] = $result;
-                    $this->logger->addInfo("OK event", $context);
-                    return $result;
+                switch ($this->secondaryAuth) {
+                    case 'event':
+                        $result = $this->attemptLoginAsCapoSpalla($cu, $birthdate);
+                        break;
+                    case 'meal':
+                        $result = $this->attemptloginAsMealProvider($cu, $cryptedBirthdate);
+                        break;
                 }
+            default:
+
+                $result = $response->setCode(403)
+                                    ->setResult("not authorized")
+                                    ->toArray();
+                $this->context['result'] = $result;
+                $this->logger->addInfo("KO no auth", $this->context);
         }
 
-        $result = [
-            "code" => 403,
-            "result" => "not authorized",
-        ];
-        $context['result'] = $result;
-        $this->logger->addInfo("KO no auth", $context);
         return $result;
     }
 
     public function getAuthStatusCode($cu, $cryptedBirthdate, $group)
     {
+        $response = new AuthResponse();
+
         $body = json_encode([
             'username' => $cu,
             'birthdate' => $cryptedBirthdate,
@@ -127,15 +135,69 @@ class Auth
 
         } catch (RequestException $e) {
 
-            return [
-                'code' => 500,
-                'result' => $e->getMessage(),
-            ];
+            return $response->setCode(500)
+                ->setResult($e->getMessage())
+                ->toArray();
+
         }
 
-        return [
-            'code' => $this->response->getStatusCode(),
-            'result' => '-'
-        ];
+        return $response->setCode($this->response->getStatusCode())
+            ->setResult("-")
+            ->toArray();
+    }
+
+    public function attemptLoginAsCapoSpalla($cu, $birthdate)
+    {
+        $response = new AuthResponse();
+
+        $ok = $this->varchi->existsPerson($cu, $birthdate) && $this->varchi->isCapoSpalla($cu);
+        if ($ok) {
+
+            $result = $response->setCode(200)
+                ->setResult("event")
+                ->toArray();
+
+            $this->context['result'] = $result;
+            $this->logger->addInfo("OK event", $this->context);
+
+            return $result;
+        }
+
+        $result = $response->setCode(403)
+                            ->setResult("not authorized")
+                            ->toArray();
+
+        $this->context['result'] = $result;
+        $this->logger->addInfo("KO no auth", $this->context);
+
+        return $result;
+    }
+
+    public function attemptloginAsMealProvider($cu, $cryptedBirthdate)
+    {
+        $response = new AuthResponse();
+
+        $group = "meal";
+
+        $statusCode = $this->getAuthStatusCode($cu, $cryptedBirthdate, $group);
+
+        if (204 == $statusCode) {
+
+            $result = $response->setCode(200)
+                                ->setResult("meal")
+                                ->toArray();
+
+            $this->context['result'] = $result;
+            $this->logger->addInfo("OK meal", $this->context);
+            return $result;
+        } else {
+            $result = $response->setCode(403)
+                                ->setResult("not authorized")
+                                ->toArray();
+
+            $this->context['result'] = $result;
+            $this->logger->addInfo("KO no auth", $this->context);
+            return $result;
+        }
     }
 } 

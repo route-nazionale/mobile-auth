@@ -2,13 +2,21 @@
 
 include(__DIR__ . '/../config/params.php');
 
-$sqlite_filename = __DIR__ . '/../data/' . SQLITE_DB_FILENAME;
-$gzipped_filename = __DIR__ . '/../web/' . SQLITE_DB_FILENAME . '.gz';
+
+$sqlite_filename = __DIR__ . '/../data/meal/' . SQLITE_DB_MEAL_FILENAME;
+$gzipped_filename = __DIR__ . '/../web/meal/' . SQLITE_DB_MEAL_FILENAME  . '.gz';
 $mysql_host = MYSQL_HOST;
 $mysql_db = MYSQL_DB_VARCHI;
 $mysql_user = MYSQL_USER_VARCHI;
 $mysql_password = MYSQL_PASS_VARCHI;
 
+
+$today = new \DateTime();
+$day = $today->format("j");
+
+if (APP_DEBUG) {
+    $day = 4;
+}
 
 if (file_exists($sqlite_filename)) {
     // Se esiste il db sqlite lo cancello
@@ -30,7 +38,8 @@ if (mysqli_connect_errno()) {
     $sql = "CREATE TABLE IF NOT EXISTS `persone` (  `codiceUnivoco` varchar(30) NOT NULL,  `ristampaBadge` decimal(10,0) DEFAULT NULL,  `nome` varchar(50) DEFAULT NULL,  `cognome` varchar(50) DEFAULT NULL,  `idGruppo` varchar(10) DEFAULT NULL,  `codiceAgesci` varchar(10) DEFAULT NULL,  `idUnita` varchar(5) DEFAULT NULL,  `quartiere` int(11) DEFAULT NULL,  `contrada` int(11) DEFAULT NULL,  PRIMARY KEY (`codiceUnivoco`))" ;
     $sq->query($sql);
 
-    $result = mysqli_query($con,"SELECT * FROM persone");
+
+    $result = mysqli_query($con,"SELECT p.* FROM presenze_mensa pm inner join persone p on p.codiceUnivoco = pm.cu WHERE pm.n{$day}");
     while($row = mysqli_fetch_array($result)) {
 
         $sql = "INSERT INTO `persone`(`codiceUnivoco`, `ristampaBadge`, `nome`, `cognome`, `idGruppo`, `codiceAgesci`, `idUnita`, `quartiere`, `contrada`)
@@ -55,13 +64,13 @@ if (mysqli_connect_errno()) {
     $sql = "CREATE TABLE IF NOT EXISTS `eventi` (  `idEvento` varchar(20) NOT NULL,  `nome` varchar(100) DEFAULT NULL,  `codiceStampa` varchar(20) NOT NULL,  `stradaCoraggio` INTEGER DEFAULT NULL,  `quartiere` INTEGER DEFAULT NULL,  `contrade` INTEGER DEFAULT NULL,  `tipoEvento` varchar(3) DEFAULT NULL,  PRIMARY KEY (`idEvento`)) " ;
     $sq->query($sql);
 
-    $result = mysqli_query($con,"SELECT * FROM eventi");
-    while($row = mysqli_fetch_array($result)) {
-
-        $sql = "INSERT INTO `eventi`(`idEvento`, `nome`, `codiceStampa`, `stradaCoraggio`, `quartiere`, `contrade`, `tipoEvento`) VALUES ('" . $row['idEvento']  . "', '" . SQLite3::escapeString($row['nome'])  . "', '" . $row['codiceStampa'] . "', '" . $row['stradaCoraggio']  . "', '" . $row['quartiere'] . "', '" .  $row['contrade']  . "', '" . $row['tipoEvento'] . "')" ;
-        $sq->query($sql);
-
-    }
+//    $result = mysqli_query($con,"SELECT * FROM eventi");
+//    while($row = mysqli_fetch_array($result)) {
+//
+//        $sql = "INSERT INTO `eventi`(`idEvento`, `nome`, `codiceStampa`, `stradaCoraggio`, `quartiere`, `contrade`, `tipoEvento`) VALUES ('" . $row['idEvento']  . "', '" . SQLite3::escapeString($row['nome'])  . "', '" . $row['codiceStampa'] . "', '" . $row['stradaCoraggio']  . "', '" . $row['quartiere'] . "', '" .  $row['contrade']  . "', '" . $row['tipoEvento'] . "')" ;
+//        $sq->query($sql);
+//
+//    }
 
     // creo la tabella gruppi in sqlite
     $sql = "CREATE TABLE IF NOT EXISTS `gruppi` (  `idGruppo` varchar(20) NOT NULL,  `idUnita` varchar(5) DEFAULT NULL,  `nome` varchar(50) NOT NULL) " ;
@@ -78,14 +87,14 @@ if (mysqli_connect_errno()) {
     $sql = "CREATE TABLE IF NOT EXISTS `assegnamenti` ( `idAssegnamenti` INTEGER PRIMARY KEY AUTOINCREMENT, `codiceUnivoco` varchar(30) DEFAULT NULL, `idEvento` varchar(20) DEFAULT NULL, `slot` decimal(10,0) DEFAULT NULL, `staffEvento` tinyint(1) DEFAULT '0')";
     $sq->query($sql);
 
-    $result = mysqli_query($con,"SELECT * FROM assegnamenti");
-    while($row = mysqli_fetch_array($result)) {
-        $sql = "INSERT INTO `assegnamenti` ( `codiceUnivoco`, `idEvento`, `slot`, `staffEvento` ) VALUES ('" . $row['codiceUnivoco']  . "', '" . $row['idEvento'] . "', '" . $row['slot']  . "', '" . $row['staffEvento'] . "')" ;
-        $sq->query($sql);
-
-    }
-    echo "DB generato correttamente";
-    mysqli_close($con);
+//    $result = mysqli_query($con,"SELECT * FROM assegnamenti");
+//    while($row = mysqli_fetch_array($result)) {
+//        $sql = "INSERT INTO `assegnamenti` ( `codiceUnivoco`, `idEvento`, `slot`, `staffEvento` ) VALUES ('" . $row['codiceUnivoco']  . "', '" . $row['idEvento'] . "', '" . $row['slot']  . "', '" . $row['staffEvento'] . "')" ;
+//        $sq->query($sql);
+//
+//    }
+//    echo "DB generato correttamente";
+//    mysqli_close($con);
     $sq->close();
 
     // Comprime l'archivio

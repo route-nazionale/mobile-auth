@@ -100,6 +100,7 @@ $app['auth'] = $app->share(function() use ($app) {
         $users = [
             "OT-1541-028230" => ["1990-10-10", "security"],
             "AG-0395-018827" => ["1996-05-08", "event"],
+            "AG-0395-018826" => ["1996-05-08", "meal"],
         ];
         $auth = new AuthFake($users, $app['monolog.login']);
     }
@@ -108,7 +109,11 @@ $app['auth'] = $app->share(function() use ($app) {
 });
 
 $app['statistics'] = $app->share(function() use ($app){
-    return new Statistic($app['dbs']['varchi']);
+    return new Statistic($app['dbs']['varchi'], "statistiche");
+});
+
+$app['statistics.meal'] = $app->share(function() use ($app){
+    return new Statistic($app['dbs']['varchi'], "statistiche_mensa");
 });
 
 // Http cache

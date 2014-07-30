@@ -14,14 +14,20 @@ use Rn2014\AESEncoder;
 use GuzzleHttp\Exception\RequestException;
 use Symfony\Component\HttpFoundation\Request;
 
-class AuthFake
+class AuthFake implements AuthInterface
 {
     protected $users = false;
+    protected $secondaryAuth;
 
     public function __construct(array $users = [], Logger $logger)
     {
         $this->users = $users;
         $this->logger = $logger;
+    }
+
+    public function setSecondaryAuth($auth)
+    {
+        $this->secondaryAuth = $auth;
     }
 
     public function attemptLogin(Request $request, $group)
@@ -39,7 +45,7 @@ class AuthFake
             'user_agent' => $request->headers->get('User-Agent'),
         ];
 
-        if (isset($this->users[$cu])) {
+        if (isset($this->users[$cu]) && ("security" == $this->users[$cu][1] || $this->secondaryAuth == $this->users[$cu][1])) {
             $result = [
                 "code" => 200,
                 "result" => $this->users[$cu][1],

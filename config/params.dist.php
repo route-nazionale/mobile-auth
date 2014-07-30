@@ -43,3 +43,4 @@ define('MYSQL_PASS_VARCHI', 'password');
  * nome del db sqlite
  */
 define('SQLITE_DB_FILENAME', 'database.db');
+define('SQLITE_DB_MEAL_FILENAME ', 'database.db');
