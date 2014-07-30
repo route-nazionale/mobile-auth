@@ -254,12 +254,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/Seldaek/monolog.git",
-                "reference": "61145103b6521d04c0386d1ea6899437df9d45e2"
+                "reference": "997222d25ec7eb53b7e0d864cee424c01fe27c32"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Seldaek/monolog/zipball/61145103b6521d04c0386d1ea6899437df9d45e2",
-                "reference": "61145103b6521d04c0386d1ea6899437df9d45e2",
+                "url": "https://api.github.com/repos/Seldaek/monolog/zipball/997222d25ec7eb53b7e0d864cee424c01fe27c32",
+                "reference": "997222d25ec7eb53b7e0d864cee424c01fe27c32",
                 "shasum": ""
             },
             "require": {
@@ -275,7 +275,8 @@
                 "graylog2/gelf-php": "~1.0",
                 "phpunit/phpunit": "~3.7.0",
                 "raven/raven": "~0.5",
-                "ruflin/elastica": "0.90.*"
+                "ruflin/elastica": "0.90.*",
+                "videlalvaro/php-amqplib": "~2.4"
             },
             "suggest": {
                 "aws/aws-sdk-php": "Allow sending log messages to AWS services like DynamoDB",
@@ -285,12 +286,13 @@
                 "graylog2/gelf-php": "Allow sending log messages to a GrayLog2 server",
                 "raven/raven": "Allow sending log messages to a Sentry server",
                 "rollbar/rollbar": "Allow sending log messages to Rollbar",
-                "ruflin/elastica": "Allow sending log messages to an Elastic Search server"
+                "ruflin/elastica": "Allow sending log messages to an Elastic Search server",
+                "videlalvaro/php-amqplib": "Allow sending log messages to an AMQP server using php-amqplib"
             },
             "type": "library",
             "extra": {
                 "branch-alias": {
-                    "dev-master": "1.10.x-dev"
+                    "dev-master": "1.11.x-dev"
                 }
             },
             "autoload": {
@@ -316,7 +318,7 @@
                 "logging",
                 "psr-3"
             ],
-            "time": "2014-07-19 19:11:34"
+            "time": "2014-07-28 20:11:00"
         },
         {
             "name": "phpseclib/phpseclib",
@@ -324,12 +326,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/phpseclib/phpseclib.git",
-                "reference": "bb1c36893fb61ef997ef8b364086bd449d87214f"
+                "reference": "e4516fb45307847a189d0a79b5a5f9f22ef9e316"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/phpseclib/phpseclib/zipball/bb1c36893fb61ef997ef8b364086bd449d87214f",
-                "reference": "bb1c36893fb61ef997ef8b364086bd449d87214f",
+                "url": "https://api.github.com/repos/phpseclib/phpseclib/zipball/e4516fb45307847a189d0a79b5a5f9f22ef9e316",
+                "reference": "e4516fb45307847a189d0a79b5a5f9f22ef9e316",
                 "shasum": ""
             },
             "require": {
@@ -416,7 +418,7 @@
                 "x.509",
                 "x509"
             ],
-            "time": "2014-07-24 15:32:38"
+            "time": "2014-07-26 15:20:09"
         },
         {
             "name": "pimple/pimple",
