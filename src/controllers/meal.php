@@ -20,16 +20,11 @@ $meal->post("/auth.php", function() use ($app){
     // indice di ristampa badge
     $reprint = $app['request']->get('reprint');
 
-    $app['auth']->setSecondaryAuth('meal');
-    $group  = "security";
+    $app['auth']->setSecondaryAuth(null);
 
-    try {
+    $group  = LDAP_MEAL_GROUP;
 
-        $result = $app['auth']->attemptLogin($app['request'], $group);
-
-    } catch (\Exception $e) {
-        return new Response($e->getMessage(), 500);
-    }
+    $result = $app['auth']->attemptLogin($app['request'], $group);
 
     return new Response($result['result'], $result['code']);
 });
@@ -41,16 +36,11 @@ $meal->post("/post.php", function() use ($app){
 //     indice di ristampa badge
 //    $reprint = $app['request']->request->get('reprint');
 
-    $app['auth']->setSecondaryAuth('meal');
-    $group  = "security";
+    $app['auth']->setSecondaryAuth(null);
 
-    try {
+    $group  = LDAP_MEAL_GROUP;
 
-        $result = $app['auth']->attemptLogin($app['request'], $group);
-
-    } catch (\Exception $e) {
-        return new Response($e->getMessage(), 500);
-    }
+    $result = $app['auth']->attemptLogin($app['request'], $group);
 
     // check auth $result
     if ($result['code'] != 200) {

@@ -18,15 +18,8 @@ $gate->post("/auth.php", function() use ($app){
     $reprint = $app['request']->get('reprint');
 
     $app['auth']->setSecondaryAuth('event');
-    $group  = "security";
-
-    try {
-
-        $result = $app['auth']->attemptLogin($app['request'], $group);
-
-    } catch (\Exception $e) {
-        return new Response($e->getMessage(), 500);
-    }
+    $group  = LDAP_GATE_GROUP;
+    $result = $app['auth']->attemptLogin($app['request'], $group);
 
     return new Response($result['result'], $result['code']);
 });
@@ -38,15 +31,9 @@ $gate->post("/post.php", function() use ($app){
     $reprint = $app['request']->request->get('reprint');
 
     $app['auth']->setSecondaryAuth('event');
-    $group  = "security";
+    $group  = LDAP_GATE_GROUP;
 
-    try {
-
-        $result = $app['auth']->attemptLogin($app['request'], $group);
-
-    } catch (\Exception $e) {
-        return new Response($e->getMessage(), 500);
-    }
+    $result = $app['auth']->attemptLogin($app['request'], $group);
 
     // check auth $result
     if ($result['code'] != 200) {
@@ -85,19 +72,9 @@ $gate->post("/ident.php", function() use ($app){
     }
 
     $app['auth']->setSecondaryAuth(null);
-    $group = "security";
+    $group = LDAP_GATE_GROUP;
 
-    /*
-     * Autenticazione
-     * Solo SECURITY!
-     */
-    try {
-
-        $result = $app['auth']->attemptLogin($app['request'], $group);
-
-    } catch (\Exception $e) {
-        return new Response($e->getMessage(), 500);
-    }
+    $result = $app['auth']->attemptLogin($app['request'], $group);
 
     // check auth $result
     if ($result['code'] != 200) {

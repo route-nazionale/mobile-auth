@@ -7,12 +7,12 @@
 
 namespace Rn2014\Auth;
 
-use Doctrine\DBAL\Connection;
 use GuzzleHttp\Client;
 use Monolog\Logger;
 use Rn2014\AESEncoder;
 use Rn2014\Varchi;
 use Symfony\Component\HttpFoundation\Request;
+use GuzzleHttp\Exception\RequestException;
 
 class Auth implements AuthInterface
 {
@@ -79,12 +79,10 @@ class Auth implements AuthInterface
             case 204:
                 $result = $response->setCode(200)
                                     ->setResult("security")
-                                    ->toArray();[
-                    "code" => 200,
-                    "result" => "security",
-                ];
+                                    ->toArray();
+
                 $this->context['result'] = $result;
-                $this->logger->addInfo("OK security", $this->context);
+                $this->logger->addInfo("OK $group", $this->context);
 
                 return $result;
             case 401:
@@ -97,14 +95,10 @@ class Auth implements AuthInterface
 
                 return $result;
             case 403:
-                switch ($this->secondaryAuth) {
-                    case 'event':
-                        $result = $this->attemptLoginAsCapoSpalla($cu, $birthdate);
-                        break;
-                    case 'meal':
-                        $result = $this->attemptloginAsMealProvider($cu, $cryptedBirthdate);
-                        break;
+                if ("event" == $this->secondaryAuth) {
+                    $result = $this->attemptLoginAsCapoSpalla($cu, $birthdate);
                 }
+                break;
             default:
 
                 $result = $response->setCode(403)
@@ -171,33 +165,5 @@ class Auth implements AuthInterface
         $this->logger->addInfo("KO no auth", $this->context);
 
         return $result;
-    }
-
-    public function attemptloginAsMealProvider($cu, $cryptedBirthdate)
-    {
-        $response = new AuthResponse();
-
-        $group = "meal";
-
-        $statusCode = $this->getAuthStatusCode($cu, $cryptedBirthdate, $group);
-
-        if (204 == $statusCode) {
-
-            $result = $response->setCode(200)
-                                ->setResult("meal")
-                                ->toArray();
-
-            $this->context['result'] = $result;
-            $this->logger->addInfo("OK meal", $this->context);
-            return $result;
-        } else {
-            $result = $response->setCode(403)
-                                ->setResult("not authorized")
-                                ->toArray();
-
-            $this->context['result'] = $result;
-            $this->logger->addInfo("KO no auth", $this->context);
-            return $result;
-        }
     }
 } 

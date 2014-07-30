@@ -12,6 +12,12 @@ define('HTTPS_REQUIRED', false);
 
 define('API_AUTH', "https://localhost/auth");
 
+/**
+ * gruppi ldap su cui richiedere l'autenticazione
+ */
+define('LDAP_GATE_GROUP','security');
+define('LDAP_MEAL_GROUP','security');
+
 /*
  * se non sono presenti le cerca su db
  * iv e key di decrypt

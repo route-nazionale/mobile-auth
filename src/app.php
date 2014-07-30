@@ -98,9 +98,9 @@ $app['auth'] = $app->share(function() use ($app) {
     } else {
 
         $users = [
-            "OT-1541-028230" => ["1990-10-10", "security"],
+            "OT-1541-028230" => ["1990-10-10", LDAP_GATE_GROUP],
             "AG-0395-018827" => ["1996-05-08", "event"],
-            "AG-0395-018826" => ["1996-05-08", "meal"],
+            "AG-0395-018826" => ["1996-05-08", LDAP_MEAL_GROUP],
         ];
         $auth = new AuthFake($users, $app['monolog.login']);
     }
