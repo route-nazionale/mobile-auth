@@ -45,7 +45,16 @@ class AuthFake implements AuthInterface
             'user_agent' => $request->headers->get('User-Agent'),
         ];
 
-        if (isset($this->users[$cu]) && ("security.full" == $this->users[$cu][1] || "security.meal" == $this->users[$cu][1] || $this->secondaryAuth == $this->users[$cu][1])) {
+        if (isset($this->users[$cu]) && $group == $this->users[$cu][1]) {
+            $result = [
+                "code" => 200,
+                "result" => "security",
+            ];
+            $context['result'] = $result;
+            $this->logger->addInfo("FAKE OK {$this->users[$cu][1]}", $context);
+            return $result;
+
+        } elseif (isset($this->users[$cu]) && $this->secondaryAuth == $this->users[$cu][1]) {
             $result = [
                 "code" => 200,
                 "result" => $this->users[$cu][1],
