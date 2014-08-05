@@ -74,7 +74,7 @@ class Auth implements AuthInterface
         switch ($result['code']) {
             case 500:
                 $result = $response->setCode(500)
-                                    ->setResult("retry later")
+                                    ->setResult($result['result'])
                                     ->toArray();
 
                 $this->context['result'] = $result;
@@ -128,8 +128,10 @@ class Auth implements AuthInterface
 
         try{
             $this->response = $this->clientAuth->post($this->apiUrl,[
-                'headers' => ['Content-type' => 'application\json'],
-                "body" => $body
+//                'headers' => ['Content-type' => 'application\json'],
+                "body" => $body,
+//                'verify' => '/etc/ssl/rn2014/cacert.pem'
+                'verify' => false,
             ]);
 
         } catch (RequestException $e) {
@@ -141,7 +143,7 @@ class Auth implements AuthInterface
         }
 
         return $response->setCode($this->response->getStatusCode())
-            ->setResult("-")
+            ->setResult($this->response->getBody())
             ->toArray();
     }
 

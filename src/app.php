@@ -91,6 +91,8 @@ $app['aes.encoder'] = $app->share(function() use ($app) {
 
 $app['auth.client'] = $app->share(function() use ($app) {
     $client = new GuzzleHttp\Client();
+    $client->setDefaultOption('verify', '/etc/ssl/rn2014/cacert.pem');
+    $client->setDefaultOption('headers/Content-type', 'application/json');
 
     return $client;
 });

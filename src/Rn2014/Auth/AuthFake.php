@@ -63,7 +63,6 @@ class AuthFake implements AuthInterface
             $context['result'] = $result;
             $this->logger->addInfo("FAKE OK {$this->users[$cu][1]}", $context);
             return $result;
-
         }
 
         $result = [
